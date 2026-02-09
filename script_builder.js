@@ -15,18 +15,26 @@ const userConfig = require(configPath);
 // Load Template
 const template = fs.readFileSync(templatePath, 'utf8');
 
-// Serialize Functions to Strings
-const updateStateStr = userConfig.updateState.toString();
-const generateWhatHappenStr = userConfig.generateWhatHappen.toString();
+// Serialize Data and Functions to Strings
 const defaultStateStr = JSON.stringify(userConfig.defaultState, null, 2);
 const secretKeyStr = userConfig.config.secretKey;
+const summaryTemplateStr = JSON.stringify(userConfig.summaryTemplate || {}, null, 2);
+
+// Standardized Functions serialization
+let stdFunctionsStr = "[\n";
+if (userConfig.standardizedFunctions && Array.isArray(userConfig.standardizedFunctions)) {
+    for (let i = 0; i < userConfig.standardizedFunctions.length; i++) {
+        stdFunctionsStr += "    " + userConfig.standardizedFunctions[i].toString() + ",\n";
+    }
+}
+stdFunctionsStr += "]";
 
 // Inject
 let script = template;
 script = script.replace(/\/\*__CONFIG_SECRET_KEY__\*\//g, secretKeyStr);
 script = script.replace(/\/\*__CONFIG_DEFAULT_STATE__\*\//g, defaultStateStr);
-script = script.replace(/\/\*__CONFIG_UPDATE_STATE_LOGIC__\*\//g, updateStateStr);
-script = script.replace(/\/\*__CONFIG_GENERATE_WHAT_HAPPEN_LOGIC__\*\//g, generateWhatHappenStr);
+script = script.replace(/\/\*__CONFIG_SUMMARY_TEMPLATE__\*\//g, summaryTemplateStr);
+script = script.replace(/\/\*__CONFIG_STANDARDIZED_FUNCTIONS__\*\//g, stdFunctionsStr);
 
 // Write Main Script
 fs.writeFileSync(outputPath, script);

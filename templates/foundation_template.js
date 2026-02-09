@@ -270,8 +270,6 @@ function processScript(context) {
         }
     }
 
-    const nextSecret = XORCipher.encrypt(JSON.stringify(state.data), CONFIG.secretKey);
-
     // --- Generate Guide ([WHAT_HAPPEN]) ---
 
     // Part 1: How to update the summary
@@ -299,7 +297,7 @@ function processScript(context) {
     if (stdFunctions && Array.isArray(stdFunctions)) {
         for (let i = 0; i < stdFunctions.length; i++) {
             try {
-                const output = stdFunctions[i](state);
+                const output = stdFunctions[i](state, result.summaryData || {});
                 if (output) whatHappenPart2 += output + "\n";
             } catch (e) {
                 console.error("Standardized function failed:", e);
@@ -312,6 +310,8 @@ function processScript(context) {
             }
         }
     }
+
+    const nextSecret = XORCipher.encrypt(JSON.stringify(state.data), CONFIG.secretKey);
 
     const whatHappen = whatHappenPart1 + whatHappenPart2;
 

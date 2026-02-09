@@ -36,7 +36,7 @@ module.exports = {
      * Can use 'rollxdy(x, y)' for dice rolls.
      */
     standardizedFunctions: [
-        function (state) {
+        function (state, summary) {
             let text = "Current Time: " + state.data.current_time + "\\n";
             text += "Active Effects:\\n";
             if (state.data.current_side_effects.length === 0) {
@@ -50,7 +50,7 @@ module.exports = {
             text += "Current Stats: " + JSON.stringify(state.data.stats) + "\\n";
             return text;
         },
-        function (state) {
+        function (state, summary) {
             // Example using rollxdy
             // return "Luck Check (3d6): " + rollxdy(3, 6);
             return "";
