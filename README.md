@@ -31,19 +31,18 @@ This creates a folder in `data/my-cool-project` with a default `script_def.js` a
 ### 3. Define Your Logic
 Edit `data/my-cool-project/script_def.js`. This file defines:
 - **`defaultState`**: The initial variables (stats, inventory, etc.).
-- **`summaryTemplate`**: A structured configuration that tells the engine how to process specific keys in the LLM's `[TURN_SUMMARY]`. It automatically handles:
+- **`summaryTemplate`**: A structured configuration that the engine uses to tell LLM how to provide what happens during the last turn in `[TURN_SUMMARY]`. The engine will automatically handle:
     - **Stat Impacts**: Adding/subtracting values from your state.
     - **Temporary Effects**: Tracking effects with durations that revert automatically upon expiry.
-    - **LLM Instructions**: Providing the LLM with formatting rules and descriptions.
-- **`standardizedFunctions`**: An array of functions that take the current `state` as an argument and return a string for the `[WHAT_HAPPEN]` block.
+    - **Calling your `standardizedFunctions` (see below)**: Calling relevant functions to update `state` and tell LLM what happened in the next turn. 
+- **`standardizedFunctions`**: An array of functions that take the current `state` and `summary` as arguments and return a string for the `[WHAT_HAPPEN]` block.
 
 ### 4. Build the Script
 Compile your project into a single JanitorAI-compatible script:
 ```bash
 npm run build -- data/my-cool-project
 ```
-This generates `data/my-cool-project/effective_script.js`. 
-*Note: The script is transpiled to ES5 and is human-readable for easier auditing.*
+This generates `data/my-cool-project/effective_script.js` (*Note: The script is transpiled to ES5 and is human-readable for easier auditing*) and `data/my-cool-project/effective_script.min.js` (*Note: The script is minified for smaller file size*).
 
 ### 5. Test Locally
 Verify your logic before deploying:
@@ -72,5 +71,5 @@ This project includes specialized workflows for [Antigravity](https://github.com
 ## Deployment
 1. Open your character in JanitorAI.
 2. Go to the **Scripts/Advanced** section.
-3. Paste the contents of your `effective_script.js`.
+3. Paste the contents of your `effective_script.js` or `effective_script.min.js`.
 4. Ensure your character definition or scenario explains that the LLM must start with `[SCRIPT_SECRET]` and end with `[TURN_SUMMARY]`.

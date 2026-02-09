@@ -4,12 +4,12 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = (env) => {
     const projectDir = env.project ? path.resolve(__dirname, env.project) : path.resolve(__dirname, 'data/toy-example');
 
-    return {
-        mode: 'none',
+    const createConfig = (filename, minimize) => ({
+        mode: minimize ? 'production' : 'none',
         entry: './src/entry.js',
         output: {
             path: projectDir,
-            filename: 'effective_script.js',
+            filename: filename,
         },
         resolve: {
             alias: {
@@ -41,7 +41,22 @@ module.exports = (env) => {
             ],
         },
         optimization: {
-            minimize: false,
+            minimize: minimize,
+            minimizer: minimize ? [
+                new TerserPlugin({
+                    extractComments: false,
+                    terserOptions: {
+                        format: {
+                            comments: false,
+                        },
+                    },
+                }),
+            ] : [],
         },
-    };
+    });
+
+    return [
+        createConfig('effective_script.js', false),
+        createConfig('effective_script_min.js', true),
+    ];
 };

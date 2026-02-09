@@ -46,7 +46,7 @@ const defaultReadme = `# Project: ${projectName}
    *(ensure the path resolves correctly)*
 
 ## Deployment
-Copy \`effective_script.js\` (minified usually preferred but not strictly required by this toolchain settings yet) to JanitorAI.
+Copy \`effective_script.js\` or \`effective_script.min.js\` (minified usually preferred but not strictly required by this toolchain settings yet) to JanitorAI.
 `;
 
 fs.writeFileSync(path.join(projectDir, 'script_def.js'), defaultDef);

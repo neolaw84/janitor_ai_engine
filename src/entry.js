@@ -151,7 +151,10 @@ function processScript(context) {
         for (let i = 0; i < stdFunctions.length; i++) {
             try {
                 const output = stdFunctions[i](state, result.summaryData || {});
-                if (output) whatHappenPart2 += output + "\n";
+                if (output) {
+                    whatHappenPart2 += output + "\n";
+                    break;
+                }
             } catch (e) {
                 console.error("Standardized function failed:", e);
                 const err = e.toString();
