@@ -23,26 +23,17 @@ function cleanupDir(dir) {
     });
 }
 
-if (targetProject) {
-    // If a project is specified, clean only that project
-    // Handle both "my-project" and "data/my-project"
-    const projectPath = targetProject.startsWith('data' + path.sep) || targetProject.startsWith('data/')
-        ? path.resolve(__dirname, targetProject)
-        : path.resolve(__dirname, 'data', targetProject);
-
-    cleanupDir(projectPath);
-} else {
-    // Default: Cleanup everything (root + all data subfolders)
-    console.log("No project specified. Cleaning all generated files...");
-    cleanupDir(__dirname);
-
-    const dataDir = path.join(__dirname, 'data');
-    if (fs.existsSync(dataDir)) {
-        const projects = fs.readdirSync(dataDir).filter(f => fs.statSync(path.join(dataDir, f)).isDirectory());
-        projects.forEach(project => {
-            cleanupDir(path.join(dataDir, project));
-        });
-    }
+if (!targetProject) {
+    console.error("Error: Please specify a project name or path to cleanup.");
+    console.log("Usage: node cleanup.js <project-name>");
+    process.exit(1);
 }
+
+// Handle both "my-project" and "data/my-project"
+const projectPath = targetProject.startsWith('data' + path.sep) || targetProject.startsWith('data/')
+    ? path.resolve(__dirname, targetProject)
+    : path.resolve(__dirname, 'data', targetProject);
+
+cleanupDir(projectPath);
 
 console.log('Cleanup complete.');

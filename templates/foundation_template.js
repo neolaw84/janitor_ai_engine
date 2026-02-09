@@ -154,10 +154,18 @@ function createGameState(initialState) {
     };
 }
 
-// Injected Functions wrapper
+const rollxdy = function (x, y) {
+    let total = 0;
+    for (let i = 0; i < x; i++) {
+        total += Math.floor(Math.random() * y) + 1;
+    }
+    return total;
+};
+
+// Injected Configurations wrapper
 const UserLogic = {
-    updateState: /*__CONFIG_UPDATE_STATE_LOGIC__*/,
-    generateWhatHappen: /*__CONFIG_GENERATE_WHAT_HAPPEN_LOGIC__*/
+    summaryTemplate: /*__CONFIG_SUMMARY_TEMPLATE__*/,
+    standardizedFunctions: /*__CONFIG_STANDARDIZED_FUNCTIONS__*/
 };
 
 function processScript(context) {
@@ -209,27 +217,105 @@ function processScript(context) {
     let eventsLog = [];
 
     if (result.summaryData) {
-        // Run User Logic for generic updates (e.g. inventory)
-        UserLogic.updateState(state, result.summaryData);
+        // 1. Time Update
+        if (result.summaryData.elapsed_duration) {
+            state.updateTime(result.summaryData.elapsed_duration);
+        }
 
-        // Core logic for effects
+        // 2. Revert Expired Effects
         const reverted = state.revertExpiredEffects();
         eventsLog = eventsLog.concat(reverted);
 
-        if (result.summaryData.side_effect && Array.isArray(result.summaryData.side_effect)) {
-            for (let i = 0; i < result.summaryData.side_effect.length; i++) {
-                const effect = result.summaryData.side_effect[i];
-                state.applySideEffect(effect);
-                eventsLog.push("Effect applied: " + effect.what);
+        // 3. Process Summary Data based on Template
+        const template = UserLogic.summaryTemplate;
+        for (const key in result.summaryData) {
+            if (template[key] && Array.isArray(result.summaryData[key])) {
+                const entries = result.summaryData[key];
+                const rules = template[key];
+
+                for (let i = 0; i < entries.length; i++) {
+                    const entry = entries[i];
+
+                    // Apply impacts (Immediate)
+                    if (rules.impacts) {
+                        for (const stat in rules.impacts) {
+                            if (state.data.stats[stat] !== undefined) {
+                                state.data.stats[stat] += rules.impacts[stat];
+                            }
+                        }
+                    }
+
+                    // Handle temporary effects (Future Reversion)
+                    if (rules.temp) {
+                        const duration = rules.duration || "PT0M";
+                        const expiry = TimeManager.addDuration(state.data.current_time, duration);
+
+                        // Create effect object for tracking
+                        const effect = {
+                            what: entry.what, // The value from the user summary
+                            key: key,
+                            impacts: rules.impacts, // Store impacts to reverse them later
+                            expiry: expiry,
+                            when: entry.when || state.data.current_time
+                        };
+
+                        state.data.current_side_effects.push(effect);
+                        state.data.current_side_effects.sort(function (a, b) {
+                            return new Date(a.expiry) - new Date(b.expiry);
+                        });
+                        eventsLog.push("Effect applied: " + entry.what);
+                    }
+                }
             }
         }
     }
 
     const nextSecret = XORCipher.encrypt(JSON.stringify(state.data), CONFIG.secretKey);
 
-    const whatHappen = UserLogic.generateWhatHappen(state);
+    // --- Generate Guide ([WHAT_HAPPEN]) ---
 
-    const injection = "\n\n[SYSTEM INSTRUCTION]\nThe previous turn summary and state have been processed.\nYou must adhere to the following constraints for the upcoming turn:\n\n[WHAT_HAPPEN]\n" + whatHappen + "\n[/WHAT_HAPPEN]\n\nREQUIREMENTS:\n1.  At the end of your response, you MUST include a [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.\n    -   Include \"elapsed_duration\" (e.g., \"PT5M\" for 5 minutes).\n    -   Include \"side_effect\" array if significant events occur (e.g., [{\"what\": \"drank potion\", \"impacts\": {\"charm\": 5}, \"duration\": \"PT1H\"}]).\n2.  You MUST start your response with the following encrypted state block exactly as is:\n    [SCRIPT_SECRET]" + nextSecret + "[/SCRIPT_SECRET]\n";
+    // Part 1: How to update the summary
+    let whatHappenPart1 = "## Summary Instruction\n";
+    whatHappenPart1 += "You must encompass the narration within a [TURN_SUMMARY] JSON block at the end of your response.\n";
+    whatHappenPart1 += "The JSON object MUST contain 'elapsed_duration' (e.g., \"PT5M\").\n";
+    whatHappenPart1 += "Additionally, strictly follow these rules for specific events:\n";
+
+    const template = UserLogic.summaryTemplate;
+    for (const key in template) {
+        const rules = template[key];
+        whatHappenPart1 += "- **" + key + "**: " + (rules.free_text || "") + "\n";
+        whatHappenPart1 += "  Required Format: `\"" + key + "\": [{\"what\": \"...\", \"when\": \"...\"}]`\n";
+        if (rules.temp) whatHappenPart1 += "  (This is a TEMPORARY effect lasting " + rules.duration + ")\n";
+        if (rules.impacts) whatHappenPart1 += "  (Impacts: " + JSON.stringify(rules.impacts) + ")\n";
+    }
+
+    // Part 2: What to happen (Narrative State)
+    let whatHappenPart2 = "\n## Current State & Events\n";
+    if (eventsLog.length > 0) {
+        whatHappenPart2 += "Recent Events:\n" + eventsLog.map(e => "- " + e).join("\n") + "\n";
+    }
+
+    const stdFunctions = UserLogic.standardizedFunctions;
+    if (stdFunctions && Array.isArray(stdFunctions)) {
+        for (let i = 0; i < stdFunctions.length; i++) {
+            try {
+                const output = stdFunctions[i](state);
+                if (output) whatHappenPart2 += output + "\n";
+            } catch (e) {
+                console.error("Standardized function failed:", e);
+                const err = e.toString();
+                if (err.includes("rollxdy is not defined")) {
+                    // Fallback to simpler error message or just ignore if it's strictly expected. 
+                    // But since we defined rollxdy above, this catch block is for other errors.
+                    whatHappenPart2 += "[System Error: Script function failed]\n";
+                }
+            }
+        }
+    }
+
+    const whatHappen = whatHappenPart1 + whatHappenPart2;
+
+    const injection = "\n\n[SYSTEM INSTRUCTION]\nThe previous turn summary and state have been processed.\nYou must adhere to the following constraints for the upcoming turn:\n\n[WHAT_HAPPEN]\n" + whatHappen + "\n[/WHAT_HAPPEN]\n\nREQUIREMENTS:\n1.  At the end of your response, you MUST include a [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.\n2.  You MUST start your response with the following encrypted state block exactly as is:\n    [SCRIPT_SECRET]" + nextSecret + "[/SCRIPT_SECRET]\n";
 
     context.character.scenario += injection;
 }

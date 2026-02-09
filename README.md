@@ -21,10 +21,14 @@ node project_init.js my-cool-project
 This creates a folder in `data/my-cool-project` with a default `script_def.js`.
 
 ### 2. Define Your Logic
-Edit `data/my-cool-project/script_def.js`. You can define:
+Edit `data/my-cool-project/script_def.js`. This file defines:
 - **`defaultState`**: The initial variables (stats, inventory, etc.).
-- **`updateState`**: JavaScript logic to process the LLM's `[TURN_SUMMARY]`.
-- **`generateWhatHappen`**: Logic to format the state into instructions for the LLM.
+- **`summaryTemplate`**: A structured configuration that tells the engine how to process specific keys in the LLM's `[TURN_SUMMARY]`. It automatically handles:
+    - **Stat Impacts**: Adding/subtracting values from your state.
+    - **Temporary Effects**: Tracking effects with durations that revert automatically upon expiry.
+    - **LLM Instructions**: Providing the LLM with formatting rules and descriptions.
+- **`standardizedFunctions`**: An array of functions that take the current `state` as an argument and return a string. These strings are appended to the `[WHAT_HAPPEN]` block to guide the LLM's narration.
+    - You can use the built-in `rollxdy(x, y)` function for random dice rolls (e.g., `rollxdy(3, 6)` for 3d6).
 
 ### 3. Build the Script
 Compile your project into the final "effective" script:
@@ -42,9 +46,9 @@ node test_harness.js data/my-cool-project
 ```
 
 ### 5. Cleanup
-If you want to remove the generated `effective_script.js` files:
+If you want to remove the generated `effective_script.js` files for a project:
 ```bash
-node cleanup.js
+node cleanup.js my-cool-project
 ```
 
 ## AI-Assisted Development (with Antigravity)
