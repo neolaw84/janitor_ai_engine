@@ -1,171 +1,24 @@
 "use worker;";
 
-// --- Polyfills ---
-// Simple Base64 polyfill for environments where btoa/atob might be missing
-const base64 = {
-    chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-    encode: function (input) {
-        let str = String(input);
-        let output = "";
-        for (let block, charCode, idx = 0, map = base64.chars;
-            str.charAt(idx | 0) || (map = "=", idx % 1);
-            output += map.charAt(63 & block >> 8 - idx % 1 * 8)) {
-            charCode = str.charCodeAt(idx += 3 / 4);
-            if (charCode > 0xFF) {
-                throw new Error("'base64.encode' failed: The string to be encoded contains characters outside of the Latin1 range.");
-            }
-            block = block << 8 | charCode;
-        }
-        return output;
-    },
-    decode: function (input) {
-        let str = String(input).replace(/[=]+$/, "");
-        if (str.length % 4 == 1) {
-            throw new Error("'base64.decode' failed: The string to be decoded is not correctly encoded.");
-        }
-        let output = "";
-        for (let bc = 0, bs, buffer, idx = 0;
-            buffer = str.charAt(idx++);
-            ~buffer && (bs = bc % 4 ? bs * 64 + bc : bc,
-                bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
-            buffer = base64.chars.indexOf(buffer);
-        }
-        return output;
-    }
-};
+import { _btoa, _atob } from './engine/polyfills';
+import { XORCipher } from './engine/cipher';
+import { TimeManager } from './engine/time';
+import { createGameState } from './engine/core';
 
-const _btoa = typeof btoa === 'function' ? btoa : base64.encode;
-const _atob = typeof atob === 'function' ? atob : base64.decode;
+// User Configuration (Aliased by Webpack)
+import userConfig from 'user-config';
 
-// --- Configuration ---
-// These will be injected by the builder
+// CONFIG injection handling
+// Webpack will bundle the user-config object directly.
 const CONFIG = {
-    secretKey: "/*__CONFIG_SECRET_KEY__*/",
-    defaultState: /*__CONFIG_DEFAULT_STATE__*/
+    secretKey: userConfig.config.secretKey,
+    defaultState: userConfig.defaultState
 };
 
-// --- Utilities ---
-
-const XORCipher = {
-    encrypt: function (text, key) {
-        try {
-            let result = "";
-            for (let i = 0; i < text.length; i++) {
-                result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
-            return _btoa(result);
-        } catch (e) {
-            console.error("Encryption failed:", e);
-            return "";
-        }
-    },
-    decrypt: function (text, key) {
-        try {
-            let decoded = _atob(text);
-            let result = "";
-            for (let i = 0; i < decoded.length; i++) {
-                result += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
-            return result;
-        } catch (e) {
-            console.error("Decryption failed:", e);
-            return null;
-        }
-    }
-};
-
-const TimeManager = {
-    addDuration: function (isoTime, durationStr) {
-        const date = new Date(isoTime);
-        const regex = /P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
-        const matches = durationStr.match(regex);
-
-        if (matches) {
-            const days = parseInt(matches[1] || 0);
-            const hours = parseInt(matches[2] || 0);
-            const minutes = parseInt(matches[3] || 0);
-            const seconds = parseInt(matches[4] || 0);
-
-            date.setDate(date.getDate() + days);
-            date.setHours(date.getHours() + hours);
-            date.setMinutes(date.getMinutes() + minutes);
-            date.setSeconds(date.getSeconds() + seconds);
-        }
-        const iso = date.toISOString();
-        return iso.split('.')[0] + "Z";
-    },
-    isExpired: function (expiryIso, currentIso) {
-        return new Date(expiryIso) <= new Date(currentIso);
-    }
-};
-
-// --- Core Logic ---
-
-function createGameState(initialState) {
-    const data = JSON.parse(JSON.stringify(initialState));
-
-    return {
-        data: data,
-        updateTime: function (elapsedDuration) {
-            if (elapsedDuration) {
-                this.data.current_time = TimeManager.addDuration(this.data.current_time, elapsedDuration);
-            }
-        },
-        applySideEffect: function (effect) {
-            const expiry = TimeManager.addDuration(this.data.current_time, effect.duration || "PT0M");
-
-            for (const stat in effect.impacts) {
-                if (this.data.stats[stat] !== undefined) {
-                    this.data.stats[stat] += effect.impacts[stat];
-                }
-            }
-
-            const effectCopy = {};
-            for (const key in effect) {
-                effectCopy[key] = effect[key];
-            }
-            effectCopy.expiry = expiry;
-
-            this.data.current_side_effects.push(effectCopy);
-            this.data.current_side_effects.sort(function (a, b) {
-                return new Date(a.expiry) - new Date(b.expiry);
-            });
-        },
-        revertExpiredEffects: function () {
-            const activeEffects = [];
-            const revertedLog = [];
-
-            for (let i = 0; i < this.data.current_side_effects.length; i++) {
-                const effect = this.data.current_side_effects[i];
-                if (TimeManager.isExpired(effect.expiry, this.data.current_time)) {
-                    for (const stat in effect.impacts) {
-                        if (this.data.stats[stat] !== undefined) {
-                            this.data.stats[stat] -= effect.impacts[stat];
-                        }
-                    }
-                    revertedLog.push("Effect expired: " + effect.what);
-                } else {
-                    activeEffects.push(effect);
-                }
-            }
-            this.data.current_side_effects = activeEffects;
-            return revertedLog;
-        }
-    };
-}
-
-const rollxdy = function (x, y) {
-    let total = 0;
-    for (let i = 0; i < x; i++) {
-        total += Math.floor(Math.random() * y) + 1;
-    }
-    return total;
-};
-
-// Injected Configurations wrapper
+// User Logic Wrapper
 const UserLogic = {
-    summaryTemplate: /*__CONFIG_SUMMARY_TEMPLATE__*/,
-    standardizedFunctions: /*__CONFIG_STANDARDIZED_FUNCTIONS__*/
+    summaryTemplate: userConfig.summaryTemplate || {},
+    standardizedFunctions: userConfig.standardizedFunctions || []
 };
 
 function processScript(context) {
@@ -303,8 +156,6 @@ function processScript(context) {
                 console.error("Standardized function failed:", e);
                 const err = e.toString();
                 if (err.includes("rollxdy is not defined")) {
-                    // Fallback to simpler error message or just ignore if it's strictly expected. 
-                    // But since we defined rollxdy above, this catch block is for other errors.
                     whatHappenPart2 += "[System Error: Script function failed]\n";
                 }
             }
@@ -323,3 +174,6 @@ function processScript(context) {
 if (typeof context !== 'undefined') {
     processScript(context);
 }
+
+// Export for testing if needed
+// module.exports = { processScript, XORCipher, TimeManager, createGameState };

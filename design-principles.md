@@ -32,5 +32,5 @@ Therefore,
         * "duration": "ISO standard duration string"
         * "free text": "allowed values are 'beer', 'wine' and 'liquor'. Duration should be set logically for a young woman (1 - 2 hours). Intelligence is reduced by 2 and charm is increased by 1 for 'beer' and 'wine' and intelligence is reduced by 1 and charm is increased by 2 for 'liquor'."
 
-* The developer should define an array of standardized functions that takes `state` ([SCRIPT_SECRET]) as an argument and returns a string value. The `rollxdy` function will be available to the standardized functions defined as above.
+* The developer should define an array of standardized functions that takes `state` ([SCRIPT_SECRET]) and `summary` ([TURN_SUMMARY]) as arguments and returns a string value. The `rollxdy` function will be available to the standardized functions defined as above. The returned string will be used to instruct the LLM on what to happen next as lines in the `what_happen` ([WHAT_HAPPEN]) block. These functions can have side-effects to the `state` variables if needed. 
 
