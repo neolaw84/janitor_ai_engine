@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const configPath = path.join(__dirname, 'script_def.js');
-const templatePath = path.join(__dirname, 'foundation_template.js');
-const outputPath = path.join(__dirname, 'effective_script.js');
-const minOutputPath = path.join(__dirname, 'effective_script_min.js');
+const projectDir = process.argv[2] || '.';
+const configPath = path.resolve(projectDir, 'script_def.js');
+const templatePath = path.resolve(__dirname, 'templates', 'foundation_template.js');
+const outputPath = path.resolve(projectDir, 'effective_script.js');
+const minOutputPath = path.resolve(projectDir, 'effective_script_min.js');
+
+console.log(`Using project directory: ${projectDir}`);
 
 // Load Config
 const userConfig = require(configPath);

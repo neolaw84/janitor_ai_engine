@@ -1,8 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load the script content
-const scriptPath = path.join(__dirname, 'effective_script.js');
+const projectDir = process.argv[2] || '.';
+const scriptPath = path.resolve(projectDir, 'effective_script.js');
+
+console.log(`Testing project: ${projectDir}`);
+
+if (!fs.existsSync(scriptPath)) {
+    console.error(`Error: ${scriptPath} not found. Run builder first.`);
+    process.exit(1);
+}
+
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
 // Mock Context

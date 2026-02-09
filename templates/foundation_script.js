@@ -1,5 +1,7 @@
 "use worker;";
 
+// This is how the completed script should look like.
+
 // --- Polyfills ---
 // Simple Base64 polyfill for environments where btoa/atob might be missing
 const base64 = {
