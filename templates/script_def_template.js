@@ -1,6 +1,6 @@
 module.exports = {
     config: {
-        secretKey: "MySecretKey123", // User should change this
+        secretKey: "/*__PROJECT_SECRET_KEY__*/",
     },
     defaultState: {
         inventory: [],

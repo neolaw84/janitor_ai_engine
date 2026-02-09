@@ -20,38 +20,15 @@ console.log(`Creating project: ${projectName} at ${projectDir}`);
 // Create directory
 fs.mkdirSync(projectDir, { recursive: true });
 
-// Default script_def.js
-const defaultDef = `module.exports = {
-    config: {
-        secretKey: "SECRET_${projectName.toUpperCase()}_${Math.floor(Math.random() * 1000)}", 
-    },
-    defaultState: {
-        inventory: [],
-        stats: {
-            health: 100,
-            gold: 0
-        },
-        current_side_effects: [],
-        current_time: "2025-01-01T12:00:00Z",
-        turn_count: 0
-    },
-    updateState: function (state, summary) {
-        if (summary.elapsed_duration) {
-            state.updateTime(summary.elapsed_duration);
-        }
-        
-        if (summary.gained_gold) {
-            state.data.stats.gold += summary.gained_gold;
-        }
-    },
-    generateWhatHappen: function (state) {
-        let text = "Current Time: " + state.data.current_time + "\\n";
-        text += "Gold: " + state.data.stats.gold + "\\n";
-        text += "Inventory: " + (state.data.inventory.length ? state.data.inventory.join(", ") : "Empty") + "\\n";
-        return text;
-    }
-};
-`;
+// Load Template
+const templatePath = path.resolve(__dirname, 'templates', 'script_def_template.js');
+let defaultDef = fs.readFileSync(templatePath, 'utf8');
+
+// Generate Secret
+const secretKey = `SECRET_${projectName.toUpperCase()}_${Math.floor(Math.random() * 1000)}`;
+
+// Inject
+defaultDef = defaultDef.replace("/*__PROJECT_SECRET_KEY__*/", secretKey);
 
 // Default README.md
 const defaultReadme = `# Project: ${projectName}
