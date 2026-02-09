@@ -1,18 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const projectName = process.argv[2];
 
 if (!projectName) {
-    console.error("Usage: npm run init <project_name>");
-    process.exit(1);
+  console.error("Usage: npm run init <project_name>");
+  process.exit(1);
 }
 
-const projectDir = path.resolve(__dirname, '..', 'data', projectName);
+const projectDir = path.resolve(__dirname, "..", "data", projectName);
 
 if (fs.existsSync(projectDir)) {
-    console.error(`Error: Project directory ${projectDir} already exists.`);
-    process.exit(1);
+  console.error(`Error: Project directory ${projectDir} already exists.`);
+  process.exit(1);
 }
 
 console.log(`Creating project: ${projectName} at ${projectDir}`);
@@ -21,8 +21,13 @@ console.log(`Creating project: ${projectName} at ${projectDir}`);
 fs.mkdirSync(projectDir, { recursive: true });
 
 // Load Template
-const templatePath = path.resolve(__dirname, '..', 'templates', 'script_def_template.js');
-let defaultDef = fs.readFileSync(templatePath, 'utf8');
+const templatePath = path.resolve(
+  __dirname,
+  "..",
+  "templates",
+  "script_def_template.js",
+);
+let defaultDef = fs.readFileSync(templatePath, "utf8");
 
 // Generate Secret
 const secretKey = `SECRET_${projectName.toUpperCase()}_${Math.floor(Math.random() * 1000)}`;
@@ -49,8 +54,8 @@ const defaultReadme = `# Project: ${projectName}
 Copy \`effective_script.js\` or \`effective_script.min.js\` (minified usually preferred but not strictly required by this toolchain settings yet) to JanitorAI.
 `;
 
-fs.writeFileSync(path.join(projectDir, 'script_def.js'), defaultDef);
-fs.writeFileSync(path.join(projectDir, 'README.md'), defaultReadme);
+fs.writeFileSync(path.join(projectDir, "script_def.js"), defaultDef);
+fs.writeFileSync(path.join(projectDir, "README.md"), defaultReadme);
 
 console.log(`Project ${projectName} initialized.`);
 console.log(`Next steps:`);
