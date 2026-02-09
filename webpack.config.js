@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = (env) => {
@@ -42,19 +43,26 @@ module.exports = (env) => {
         },
       ],
     },
+    plugins: [
+      new webpack.BannerPlugin({
+        banner: '"use worker;";',
+        raw: true,
+        entryOnly: true,
+      }),
+    ],
     optimization: {
       minimize: minimize,
       minimizer: minimize
         ? [
-            new TerserPlugin({
-              extractComments: false,
-              terserOptions: {
-                format: {
-                  comments: false,
-                },
+          new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+              format: {
+                comments: false,
               },
-            }),
-          ]
+            },
+          }),
+        ]
         : [],
     },
   });

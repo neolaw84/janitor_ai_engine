@@ -58,3 +58,11 @@ export function createGameState(initialState) {
     },
   };
 }
+
+export function rollxdy(x, y) {
+  let total = 0;
+  for (let i = 0; i < x; i++) {
+    total += Math.floor(Math.random() * y) + 1;
+  }
+  return total;
+}

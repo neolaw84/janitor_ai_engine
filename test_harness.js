@@ -56,10 +56,14 @@ try {
   runScript(context);
 
   console.log("Script executed successfully.");
-  console.log(
-    "Updated Scenario (Tail):",
-    context.character.scenario.slice(-500),
-  );
+  const whatHappenMatch = context.character.scenario.match(/\[WHAT_HAPPEN\]([\s\S]*?)\[\/WHAT_HAPPEN\]/);
+  if (whatHappenMatch) {
+    console.log("--- [WHAT_HAPPEN] Block Content ---");
+    console.log(whatHappenMatch[1].trim());
+    console.log("-----------------------------------");
+  } else {
+    console.log("Warning: [WHAT_HAPPEN] block not found in scenario.");
+  }
 
   if (
     context.character.scenario.includes("[SCRIPT_SECRET]") &&

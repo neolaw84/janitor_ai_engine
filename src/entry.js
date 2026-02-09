@@ -1,9 +1,7 @@
-"use worker;";
-
 import { _btoa, _atob } from "./engine/polyfills";
 import { XORCipher } from "./engine/cipher";
 import { TimeManager } from "./engine/time";
-import { createGameState } from "./engine/core";
+import { createGameState, rollxdy } from "./engine/core";
 
 // User Configuration (Aliased by Webpack)
 import userConfig from "user-config";
@@ -112,7 +110,7 @@ function processScript(context) {
           if (rules.temp) {
             const duration = rules.duration || "PT0M";
             const expiry = TimeManager.addDuration(
-              state.data.current_time,
+              entry.when || state.data.current_time,
               duration,
             );
 
@@ -138,49 +136,32 @@ function processScript(context) {
 
   // --- Generate Guide ([WHAT_HAPPEN]) ---
 
-  // Part 1: How to update the summary
-  let whatHappenPart1 = "## Summary Instruction\n";
-  whatHappenPart1 +=
-    "You must encompass the narration within a [TURN_SUMMARY] JSON block at the end of your response.\n";
-  whatHappenPart1 +=
-    "The JSON object MUST contain 'elapsed_duration' (e.g., \"PT5M\").\n";
-  whatHappenPart1 +=
-    "Additionally, strictly follow these rules for specific events:\n";
+  let whatHappen = `
+## What MUST Happen and What MUST NOT Happen
 
-  const template = UserLogic.summaryTemplate;
-  for (const key in template) {
-    const rules = template[key];
-    whatHappenPart1 += "- **" + key + "**: " + (rules.free_text || "") + "\n";
-    whatHappenPart1 +=
-      '  Required Format: `"' + key + '": [{"what": "...", "when": "..."}]`\n';
-    if (rules.temp)
-      whatHappenPart1 +=
-        "  (This is a TEMPORARY effect lasting " + rules.duration + ")\n";
-    if (rules.impacts)
-      whatHappenPart1 += "  (Impacts: " + JSON.stringify(rules.impacts) + ")\n";
-  }
+**The in-game date/time when the current turn starts (at the beginning of
+your current response) is : ${TimeManager.formatDateTime(state.data.current_time)}**.
+`;
 
-  // Part 2: What to happen (Narrative State)
-  let whatHappenPart2 = "\n## Current State & Events\n";
-  if (eventsLog.length > 0) {
-    whatHappenPart2 +=
-      "Recent Events:\n" + eventsLog.map((e) => "- " + e).join("\n") + "\n";
-  }
-
+  const summaryData = result.summaryData || {};
   const stdFunctions = UserLogic.standardizedFunctions;
+
   if (stdFunctions && Array.isArray(stdFunctions)) {
-    for (let i = 0; i < stdFunctions.length; i++) {
-      try {
-        const output = stdFunctions[i](state, result.summaryData || {});
-        if (output) {
-          whatHappenPart2 += output + "\n";
-          break;
-        }
-      } catch (e) {
-        console.error("Standardized function failed:", e);
-        const err = e.toString();
-        if (err.includes("rollxdy is not defined")) {
-          whatHappenPart2 += "[System Error: Script function failed]\n";
+    for (const key in summaryData) {
+      const value = summaryData[key];
+      for (let i = 0; i < stdFunctions.length; i++) {
+        try {
+          const output = stdFunctions[i](state, key, value, rollxdy);
+          if (output) {
+            whatHappenPart2 += output + "\n";
+            break;
+          }
+        } catch (e) {
+          console.error("Standardized function failed for key " + key + ":", e);
+          const err = e.toString();
+          if (err.includes("rollxdy is not defined")) {
+            whatHappenPart2 += "[System Error: Script function failed]\n";
+          }
         }
       }
     }
@@ -191,14 +172,72 @@ function processScript(context) {
     CONFIG.secretKey,
   );
 
-  const whatHappen = whatHappenPart1 + whatHappenPart2;
+  let turnSummary = `
+   ## HOW TO CONSTRUCT [TURN_SUMMARY] BLOCK
+
+   The JSON object MUST contain 'elapsed_duration' in ISO 8601 duration 
+   format (e.g., "PT5M" for 5 minutes or "P1DT2H" for 1 day and 2 hours).
+
+   Additionally, strictly follow the following rules for specified events:
+`;
+
+  const template = UserLogic.summaryTemplate;
+
+  for (const key in template) {
+    const rules = template[key];
+    const schema = {
+      what: rules.what,
+      when: rules.when,
+      temp: rules.temp,
+      impacts: rules.impacts,
+      duration: rules.duration,
+    };
+
+    turnSummary += `
+   ${rules.free_text || ""}
+   key: ${key}
+   value: ${JSON.stringify(schema, null, 2)}
+   `;
+  }
 
   const injection =
-    "\n\n[SYSTEM INSTRUCTION]\nThe previous turn summary and state have been processed.\nYou must adhere to the following constraints for the upcoming turn:\n\n[WHAT_HAPPEN]\n" +
-    whatHappen +
-    "\n[/WHAT_HAPPEN]\n\nREQUIREMENTS:\n1.  At the end of your response, you MUST include a [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.\n2.  You MUST start your response with the following encrypted state block exactly as is:\n    [SCRIPT_SECRET]" +
-    nextSecret +
-    "[/SCRIPT_SECRET]\n";
+    `
+[SYSTEM INSTRUCTION]
+This role-play is enabled by you, {{char}}, and an external script.
+
+The external script does not have any storage. Therefore, it will 
+send an encrypted data block to you in the [SCRIPT_SECRET] block. 
+ALWAYS start your response with the [SCRIPT_SECRET] block verbatim.
+
+As an LLM, you are NOT good with mathematics, logic, game-play rules, 
+random numbers, and keeping track of time. Thus, do NOT attempt them. 
+The external script will handle all of these tasks and tell you what 
+must and must not happen in the role-play in the [WHAT_HAPPEN] block.
+
+As an LLM, you are good with narration. Feel free to narrate as long as
+your narration does NOT conflict or contradict with [WHAT_HAPPEN] block. 
+Budget your narration accordingly to have complete [TURN_SUMMARY] block 
+(see next paragraph).
+
+As a computer script, the script does NOT know what you have narrated. 
+Therefore, you must provide a summary of your current narration (this
+response you are making) in the [TURN_SUMMARY] block at the end of
+your response.
+[/SYSTEM INSTRUCTION]
+    
+[WHAT_HAPPEN]
+${whatHappen} 
+[/WHAT_HAPPEN]
+    
+REQUIREMENTS:
+  1. You MUST start your response with the following encrypted state 
+     block exactly as is (**MUST BE VERBATIM**):
+     [SCRIPT_SECRET]${nextSecret}[/SCRIPT_SECRET]
+  2. At the end of your response, you MUST include a 
+     [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.
+     Here is how to construct it: 
+${turnSummary}
+`;
 
   context.character.scenario += injection;
 }
