@@ -6,6 +6,7 @@
   "scripts": {
     "pretest": "npm run build",
     "test": "node test/test_harness.js .",
+    "generate-secret": "node scripts/generate_initial_state.js",
     "build": "webpack",
     "format": "prettier --write ."
   },
