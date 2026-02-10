@@ -1,3 +1,4 @@
 data/**
-node_modulestemplates/default/dist/
+node_modules
+templates/default/dist/
 examples/my-example-project/dist/
