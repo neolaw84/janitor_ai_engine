@@ -1,0 +1,6 @@
+REQUIREMENTS:
+  1. You MUST start your response with the following encrypted state 
+     block exactly as is (**MUST BE VERBATIM**):
+     [SCRIPT_SECRET]${nextSecret}[/SCRIPT_SECRET]
+  2. At the end of your response, you MUST include a 
+     [NARRATION_SUMMARY]...[/NARRATION_SUMMARY] JSON block.
