@@ -1,0 +1,19 @@
+{
+  "name": "janitor-script-scaffolder",
+  "version": "1.0.0",
+  "description": "CLI tool to scaffold JanitorAI script projects",
+  "main": "src/cli.js",
+  "bin": {
+    "create-janitor-script": "src/cli.js"
+  },
+  "scripts": {
+    "test": "node test/cli.test.js",
+    "create": "node src/cli.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "inquirer": "^8.2.5"
+  },
+  "author": "Neolaw",
+  "license": "MIT"
+}

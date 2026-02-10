@@ -1,0 +1,7 @@
+[SYSTEM INSTRUCTION]
+1. ALWAYS start your response with the [SCRIPT_SECRET] block given in the latest instruction verbatim.
+2. ALWAYS align your narration with [NARRATION_GUIDE] block. NEVER contradict or conflict with any part of it.
+3. ALWAYS end your response with the [NARRATION_SUMMARY] block with updated summarized information on what happened in the narration in your current response.
+[/SYSTEM INSTRUCTION]
+    
+
