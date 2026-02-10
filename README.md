@@ -4,76 +4,78 @@ A modernized, modular system for building and managing JanitorAI worker scripts 
 
 ## Directory Structure
 
-- `src/`: Main engine source code (modularized).
-- `cli/`: Command-line tools for project management.
-- `templates/`: Contains project and script definition templates.
-- `data/`: Private directory for your project definitions (gitignored).
-- `examples/`: Sample `script_def.js` files for inspiration.
-- `package.json`: Project configuration and npm scripts.
-- `webpack.config.js`: Build pipeline configuration.
-- `test_harness.js`: Simulates turns to test your script logic locally.
-- `cleanup.js`: Removes build artifacts from a project directory.
+- `src/`: Source code for the scaffolding tool (`cli.js`).
+- `templates/`: Contains project templates.
+  - `default/`: The standard project template.
+- `examples/`: Generated example projects (e.g., `my-example-project`).
+- `package.json`: Dependencies for the scaffolding tool.
 
 ## Getting Started
 
 ### 1. Installation
 
-Ensure you have Node.js installed, then install the development dependencies:
+Ensure you have Node.js (and npm) installed, then install the dependencies for the scaffolding tool:
 
 ```bash
 npm install
 ```
 
-### 2. Initialize a New Project
+### 2. Create a New Project
 
-Create a new private workspace for your script:
+Use the built-in CLI tool to scaffold a new project:
 
 ```bash
-npm run init -- my-cool-project
+# Interactive mode
+node src/cli.js
+
+# Or specify the project name
+node src/cli.js my-cool-project
 ```
 
-This creates a folder in `data/my-cool-project` with a default `script_def.js` and a README.
+This creates a new folder (e.g., `my-cool-project`) with a complete project structure, including source code, tests, and build configuration.
 
-### 3. Define Your Logic
+### 3. Develop Your Script
 
-Edit `data/my-cool-project/script_def.js`. This file defines:
+Navigate to your new project directory:
 
-- **`defaultState`**: The initial variables (stats, inventory, etc.).
-- **`summaryTemplate`**: A structured configuration that the engine uses to tell LLM how to provide what happens during the last turn in `[TURN_SUMMARY]`. The engine will automatically handle:
-  - **Stat Impacts**: Adding/subtracting values from your state.
-  - **Temporary Effects**: Tracking effects with durations that revert automatically upon expiry.
-  - **Calling your `standardizedFunctions` (see below)**: Calling relevant functions to update `state` and tell LLM what happened in the next turn.
-- **`standardizedFunctions`**: An array of functions that take the current `state` and `summary` as arguments and return a string for the `[WHAT_HAPPEN]` block.
+```bash
+cd my-cool-project
+npm install
+```
 
-### 4. Build the Script
+#### Define Logic
+Edit `script_def.js`. This file defines:
+- **`defaultState`**: Initial variables.
+- **`summaryTemplate`**: Configuration for `[TURN_SUMMARY]`.
+- **`standardizedFunctions`**: Logic for `[WHAT_HAPPEN]`.
+
+**Resources**: Large text blocks (like system prompts) are stored in the `resources/` directory and imported into `script_def.js` or `src/entry.js`.
+
+### 4. Build
 
 Compile your project into a single JanitorAI-compatible script:
 
 ```bash
-npm run build -- data/my-cool-project
+npm run build
 ```
 
-This generates `data/my-cool-project/effective_script.js` (_Note: The script is transpiled to ES5 and is human-readable for easier auditing_) and `data/my-cool-project/effective_script.min.js` (_Note: The script is minified for smaller file size_).
+The compiled scripts will be output to the `dist/` directory:
+- `dist/effective_script.js`: Human-readable (transpiled to ES5).
+- `dist/effective_script.min.js`: Minified.
 
 ### 5. Test Locally
 
-Verify your logic before deploying:
+Verify your logic using the included test harness:
 
 ```bash
-node test_harness.js data/my-cool-project
+npm test
 ```
 
-### 6. Cleanup
-
-Remove generated build files:
-
-```bash
-node cleanup.js my-cool-project
-```
+This simulates a conversation turn and verifies the script output.
 
 ## AI-Assisted Development (with Antigravity)
 
-This project includes specialized workflows for [Antigravity](https://github.com/google-deepmind/antigravity) (Google DeepMind's agentic AI coding assistant). If you are using Antigravity, you can automate complex tasks using natural language.
+This project includes specialized workflows for [Antigravity](https://github.com/google-deepmind/antigravity).
 
 ### Available Workflows
 
@@ -87,7 +89,6 @@ This project includes specialized workflows for [Antigravity](https://github.com
 
 ## Deployment
 
-1. Open your character in JanitorAI.
-2. Go to the **Scripts/Advanced** section.
-3. Paste the contents of your `effective_script.js` or `effective_script.min.js`.
-4. Ensure your character definition or scenario explains that the LLM must start with `[SCRIPT_SECRET]` and end with `[TURN_SUMMARY]`.
+1. Create a new script in JanitorAI. Choose "Advanced" as the script type.
+2. Paste the contents of `dist/effective_script.js` or `dist/effective_script.min.js`.
+3. Ensure your character definition or scenario explains that the LLM must start with `[SCRIPT_SECRET]` and end with `[TURN_SUMMARY]`.
