@@ -233,7 +233,7 @@ function processScript(context) {
 
     // Extract Summary
     const summaryMatch = lastMsg.match(
-      /\[TURN_SUMMARY\]([\s\S]*?)\[\/TURN_SUMMARY\]/,
+      /\[NARRATION_SUMMARY\]([\s\S]*?)\[\/NARRATION_SUMMARY\]/,
     );
     let summaryData = null;
     if (summaryMatch) {
@@ -285,24 +285,24 @@ function processScript(context) {
     CONFIG.secretKey,
   );
 
-  // Construct [WHAT_HAPPEN] block
-  let whatHappen = "Current Time: " + state.data.current_time + "\n";
-  whatHappen += "Active Effects:\n";
+  // Construct [NARRATION_GUIDE] block
+  let narrationGuide = "Current Time: " + state.data.current_time + "\n";
+  narrationGuide += "Active Effects:\n";
   if (state.data.current_side_effects.length === 0) {
-    whatHappen += "- None\n";
+    narrationGuide += "- None\n";
   } else {
     for (let i = 0; i < state.data.current_side_effects.length; i++) {
       const effect = state.data.current_side_effects[i];
-      whatHappen += "- " + effect.what + " (Expires: " + effect.expiry + ")\n";
+      narrationGuide += "- " + effect.what + " (Expires: " + effect.expiry + ")\n";
     }
   }
-  whatHappen += "Current Stats: " + JSON.stringify(state.data.stats);
+  narrationGuide += "Current Stats: " + JSON.stringify(state.data.stats);
 
   // Injection
   const injection =
-    "\n\n[SYSTEM INSTRUCTION]\nThe previous turn summary and state have been processed.\nYou must adhere to the following constraints for the upcoming turn:\n\n[WHAT_HAPPEN]\n" +
-    whatHappen +
-    '\n[/WHAT_HAPPEN]\n\nREQUIREMENTS:\n1.  At the end of your response, you MUST include a [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.\n    -   Include "elapsed_duration" (e.g., "PT5M" for 5 minutes).\n    -   Include "side_effect" array if significant events occur (e.g., [{"what": "drank potion", "impacts": {"charm": 5}, "duration": "PT1H"}]).\n2.  You MUST start your response with the following encrypted state block exactly as is:\n    [SCRIPT_SECRET]' +
+    "\n\n[SYSTEM INSTRUCTION]\nThe previous turn summary and state have been processed.\nYou must adhere to the following constraints for the upcoming turn:\n\n[NARRATION_GUIDE]\n" +
+    narrationGuide +
+    '\n[/NARRATION_GUIDE]\n\nREQUIREMENTS:\n1.  At the end of your response, you MUST include a [NARRATION_SUMMARY]...[/NARRATION_SUMMARY] JSON block.\n    -   Include "elapsed_duration" (e.g., "PT5M" for 5 minutes).\n    -   Include "side_effect" array if significant events occur (e.g., [{"what": "drank potion", "impacts": {"charm": 5}, "duration": "PT1H"}]).\n2.  You MUST start your response with the following encrypted state block exactly as is:\n    [SCRIPT_SECRET]' +
     nextSecret +
     "[/SCRIPT_SECRET]\n";
 
