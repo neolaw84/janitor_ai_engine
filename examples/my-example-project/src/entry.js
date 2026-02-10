@@ -6,6 +6,10 @@ import { createGameState, rollxdy } from "./engine/core";
 // User Configuration (Aliased by Webpack)
 import userConfig from "user-config";
 
+import whatHappenHeader from "../resources/what_happen_header.txt";
+import turnSummaryHeader from "../resources/turn_summary_header.txt";
+import systemInstructionTemplate from "../resources/system_instruction.txt";
+
 // CONFIG injection handling
 // Webpack will bundle the user-config object directly.
 const CONFIG = {
@@ -136,12 +140,12 @@ function processScript(context) {
 
   // --- Generate Guide ([WHAT_HAPPEN]) ---
 
-  let whatHappen = `
-## What MUST Happen and What MUST NOT Happen
+  // --- Generate Guide ([WHAT_HAPPEN]) ---
 
-**The in-game date/time when the current turn starts (at the beginning of
-your current response) is : ${TimeManager.formatDateTime(state.data.current_time)}**.
-`;
+  let whatHappen = whatHappenHeader.replace(
+    "{{CURRENT_TIME}}",
+    TimeManager.formatDateTime(state.data.current_time)
+  );
 
   const summaryData = result.summaryData || {};
   const stdFunctions = UserLogic.standardizedFunctions;
@@ -172,14 +176,7 @@ your current response) is : ${TimeManager.formatDateTime(state.data.current_time
     CONFIG.secretKey,
   );
 
-  let turnSummary = `
-   ## HOW TO CONSTRUCT [TURN_SUMMARY] BLOCK
-
-   The JSON object MUST contain 'elapsed_duration' in ISO 8601 duration 
-   format (e.g., "PT5M" for 5 minutes or "P1DT2H" for 1 day and 2 hours).
-
-   Additionally, strictly follow the following rules for specified events:
-`;
+  let turnSummary = turnSummaryHeader;
 
   const template = UserLogic.summaryTemplate;
 
@@ -200,44 +197,10 @@ your current response) is : ${TimeManager.formatDateTime(state.data.current_time
    `;
   }
 
-  const injection =
-    `
-[SYSTEM INSTRUCTION]
-This role-play is enabled by you, {{char}}, and an external script.
-
-The external script does not have any storage. Therefore, it will 
-send an encrypted data block to you in the [SCRIPT_SECRET] block. 
-ALWAYS start your response with the [SCRIPT_SECRET] block verbatim.
-
-As an LLM, you are NOT good with mathematics, logic, game-play rules, 
-random numbers, and keeping track of time. Thus, do NOT attempt them. 
-The external script will handle all of these tasks and tell you what 
-must and must not happen in the role-play in the [WHAT_HAPPEN] block.
-
-As an LLM, you are good with narration. Feel free to narrate as long as
-your narration does NOT conflict or contradict with [WHAT_HAPPEN] block. 
-Budget your narration accordingly to have complete [TURN_SUMMARY] block 
-(see next paragraph).
-
-As a computer script, the script does NOT know what you have narrated. 
-Therefore, you must provide a summary of your current narration (this
-response you are making) in the [TURN_SUMMARY] block at the end of
-your response.
-[/SYSTEM INSTRUCTION]
-    
-[WHAT_HAPPEN]
-${whatHappen} 
-[/WHAT_HAPPEN]
-    
-REQUIREMENTS:
-  1. You MUST start your response with the following encrypted state 
-     block exactly as is (**MUST BE VERBATIM**):
-     [SCRIPT_SECRET]${nextSecret}[/SCRIPT_SECRET]
-  2. At the end of your response, you MUST include a 
-     [TURN_SUMMARY]...[/TURN_SUMMARY] JSON block.
-     Here is how to construct it: 
-${turnSummary}
-`;
+  const injection = systemInstructionTemplate
+    .replace("${whatHappen}", whatHappen)
+    .replace("${nextSecret}", nextSecret)
+    .replace("${turnSummary}", turnSummary);
 
   context.character.scenario += injection;
 }

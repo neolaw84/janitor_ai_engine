@@ -5,13 +5,15 @@ const TerserPlugin = require("terser-webpack-plugin");
 module.exports = (env) => {
   const projectDir = env.project
     ? path.resolve(__dirname, env.project)
-    : path.resolve(__dirname, "data/toy-example");
+    : path.resolve(__dirname, ".");
+
+  const distDir = path.resolve(projectDir, "dist");
 
   const createConfig = (filename, minimize) => ({
     mode: minimize ? "production" : "none",
     entry: "./src/entry.js",
     output: {
-      path: projectDir,
+      path: distDir,
       filename: filename,
     },
     resolve: {
@@ -40,6 +42,10 @@ module.exports = (env) => {
               ],
             },
           },
+        },
+        {
+          test: /\.(txt|md)$/i,
+          type: 'asset/source',
         },
       ],
     },
