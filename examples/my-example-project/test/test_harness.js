@@ -30,7 +30,7 @@ const context = {
       {
         role: "assistant",
         message:
-          'Hi there. [TURN_SUMMARY]{"elapsed_duration": "PT5M", "drink_alcohol": [{"what": "beer", "when": "2025-06-01T12:00:00Z"}]}[/TURN_SUMMARY]',
+          'Hi there. [NARRATION_SUMMARY]{"elapsed_duration": "PT5M", "drink_alcohol": [{"what": "beer", "when": "2025-06-01T12:00:00Z"}]}[/NARRATION_SUMMARY]',
       },
     ],
   },
@@ -56,18 +56,18 @@ try {
   runScript(context);
 
   console.log("Script executed successfully.");
-  const whatHappenMatch = context.character.scenario.match(/\[WHAT_HAPPEN\]([\s\S]*?)\[\/WHAT_HAPPEN\]/);
-  if (whatHappenMatch) {
-    console.log("--- [WHAT_HAPPEN] Block Content ---");
-    console.log(whatHappenMatch[1].trim());
-    console.log("-----------------------------------");
+  const narrationGuideMatch = context.character.scenario.match(/\[NARRATION_GUIDE\]([\s\S]*?)\[\/NARRATION_GUIDE\]/);
+  if (narrationGuideMatch) {
+    console.log("--- [NARRATION_GUIDE] Block Content ---");
+    console.log(narrationGuideMatch[1].trim());
+    console.log("---------------------------------------");
   } else {
-    console.log("Warning: [WHAT_HAPPEN] block not found in scenario.");
+    console.log("Warning: [NARRATION_GUIDE] block not found in scenario.");
   }
 
   if (
     context.character.scenario.includes("[SCRIPT_SECRET]") &&
-    context.character.scenario.includes("[TURN_SUMMARY]")
+    context.character.scenario.includes("[NARRATION_SUMMARY]")
   ) {
     console.log("Verification PASSED: Output contains expected tags.");
     process.exit(0);

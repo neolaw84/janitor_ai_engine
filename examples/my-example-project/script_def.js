@@ -17,7 +17,7 @@ module.exports = {
   },
   /*
    * Summary Template
-   * Defines how the [TURN_SUMMARY] should be structured and processed.
+   * Defines how the [NARRATION_SUMMARY] should be structured and processed.
    */
   summaryTemplate: {
     drink_alcohol: {
@@ -34,7 +34,7 @@ module.exports = {
   },
   /*
    * Standardized Functions
-   * Array of functions that take 'state' and return a string for [WHAT_HAPPEN].
+   * Array of functions that take 'state' and return a string for [NARRATION_GUIDE].
    * Can use 'rollxdy(x, y)' for dice rolls.
    */
   standardizedFunctions: [

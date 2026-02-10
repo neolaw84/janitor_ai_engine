@@ -6,9 +6,12 @@ import { createGameState, rollxdy } from "./engine/core";
 // User Configuration (Aliased by Webpack)
 import userConfig from "user-config";
 
-import whatHappenHeader from "../resources/what_happen_header.txt";
-import turnSummaryHeader from "../resources/turn_summary_header.txt";
+import narrationGuideHeader from "../resources/narration_guide_header.txt";
+import narrationSummaryHeader from "../resources/narration_summary_header.txt";
 import systemInstructionTemplate from "../resources/system_instruction.txt";
+import narrationGuideTemplate from "../resources/narration_guide.txt";
+import requirementsBlockTemplate from "../resources/requirements_block.txt";
+import narrationSummaryTemplate from "../resources/narration_summary.txt";
 
 // CONFIG injection handling
 // Webpack will bundle the user-config object directly.
@@ -59,7 +62,7 @@ function processScript(context) {
     }
 
     const summaryMatch = lastMsg.match(
-      /\[TURN_SUMMARY\]([\s\S]*?)\[\/TURN_SUMMARY\]/,
+      /\[NARRATION_SUMMARY\]([\s\S]*?)\[\/NARRATION_SUMMARY\]/,
     );
     let summaryData = null;
     if (summaryMatch) {
@@ -138,17 +141,18 @@ function processScript(context) {
     }
   }
 
-  // --- Generate Guide ([WHAT_HAPPEN]) ---
+  // --- Generate Guide ([NARRATION_GUIDE]) ---
 
-  // --- Generate Guide ([WHAT_HAPPEN]) ---
+  // --- Generate Guide ([NARRATION_GUIDE]) ---
 
-  let whatHappen = whatHappenHeader.replace(
+  let narrationGuide = narrationGuideHeader.replace(
     "{{CURRENT_TIME}}",
     TimeManager.formatDateTime(state.data.current_time)
   );
 
   const summaryData = result.summaryData || {};
   const stdFunctions = UserLogic.standardizedFunctions;
+  let narrationGuidePart2 = "";
 
   if (stdFunctions && Array.isArray(stdFunctions)) {
     for (const key in summaryData) {
@@ -157,26 +161,27 @@ function processScript(context) {
         try {
           const output = stdFunctions[i](state, key, value, rollxdy);
           if (output) {
-            whatHappenPart2 += output + "\n";
+            narrationGuidePart2 += output + "\n";
             break;
           }
         } catch (e) {
           console.error("Standardized function failed for key " + key + ":", e);
           const err = e.toString();
           if (err.includes("rollxdy is not defined")) {
-            whatHappenPart2 += "[System Error: Script function failed]\n";
+            narrationGuidePart2 += "[System Error: Script function failed]\n";
           }
         }
       }
     }
   }
+  narrationGuide += narrationGuidePart2;
 
   const nextSecret = XORCipher.encrypt(
     JSON.stringify(state.data),
     CONFIG.secretKey,
   );
 
-  let turnSummary = turnSummaryHeader;
+  let narrationSummary = narrationSummaryHeader;
 
   const template = UserLogic.summaryTemplate;
 
@@ -190,17 +195,21 @@ function processScript(context) {
       duration: rules.duration,
     };
 
-    turnSummary += `
+    narrationSummary += `
    ${rules.free_text || ""}
    key: ${key}
    value: ${JSON.stringify(schema, null, 2)}
    `;
   }
 
-  const injection = systemInstructionTemplate
-    .replace("${whatHappen}", whatHappen)
-    .replace("${nextSecret}", nextSecret)
-    .replace("${turnSummary}", turnSummary);
+  const injection =
+    systemInstructionTemplate +
+    "\n" +
+    narrationGuideTemplate.replace("${narrationGuide}", narrationGuide) +
+    "\n" +
+    requirementsBlockTemplate.replace("${nextSecret}", nextSecret) +
+    "\n" +
+    narrationSummaryTemplate.replace("${narrationSummary}", narrationSummary);
 
   context.character.scenario += injection;
 }

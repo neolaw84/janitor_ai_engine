@@ -46,8 +46,8 @@ npm install
 #### Define Logic
 Edit `script_def.js`. This file defines:
 - **`defaultState`**: Initial variables.
-- **`summaryTemplate`**: Configuration for `[TURN_SUMMARY]`.
-- **`standardizedFunctions`**: Logic for `[WHAT_HAPPEN]`.
+- **`summaryTemplate`**: Configuration for `[NARRATION_SUMMARY]`.
+- **`standardizedFunctions`**: Logic for `[NARRATION_GUIDE]`.
 
 **Resources**: Large text blocks (like system prompts) are stored in the `resources/` directory and imported into `script_def.js` or `src/entry.js`.
 
@@ -91,4 +91,4 @@ This project includes specialized workflows for [Antigravity](https://github.com
 
 1. Create a new script in JanitorAI. Choose "Advanced" as the script type.
 2. Paste the contents of `dist/effective_script.js` or `dist/effective_script.min.js`.
-3. Ensure your character definition or scenario explains that the LLM must start with `[SCRIPT_SECRET]` and end with `[TURN_SUMMARY]`.
+3. Ensure your character definition or scenario explains that the LLM must start with `[SCRIPT_SECRET]` and end with `[NARRATION_SUMMARY]`.
