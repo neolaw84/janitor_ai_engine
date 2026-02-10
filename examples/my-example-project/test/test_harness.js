@@ -7,7 +7,7 @@ if (!projectDir) {
   process.exit(1);
 }
 
-const scriptPath = path.resolve(projectDir, "effective_script.js");
+const scriptPath = path.resolve(projectDir, "dist", "effective_script.js");
 if (!fs.existsSync(scriptPath)) {
   console.error(`Script not found: ${scriptPath}`);
   process.exit(1);
@@ -70,6 +70,7 @@ try {
     context.character.scenario.includes("[TURN_SUMMARY]")
   ) {
     console.log("Verification PASSED: Output contains expected tags.");
+    process.exit(0);
   } else {
     console.error("Verification FAILED: Output missing expected tags.");
     process.exit(1);

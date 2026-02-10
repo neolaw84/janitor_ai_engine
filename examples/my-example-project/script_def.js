@@ -1,3 +1,5 @@
+const drinkAlcoholDescription = require("./resources/drink_alcohol_description.txt");
+
 module.exports = {
   config: {
     secretKey: "/*__PROJECT_SECRET_KEY__*/",
@@ -9,9 +11,9 @@ module.exports = {
       intelligence: 10,
       strength: 10,
     },
-    current_side_effects: [],
     current_time: "2025-06-01T12:00:00Z",
     turn_count: 0,
+    current_side_effects: [],
   },
   /*
    * Summary Template
@@ -27,8 +29,7 @@ module.exports = {
         charm: 0,
       },
       duration: "PT1H",
-      free_text:
-        "allowed values are 'beer', 'wine' and 'liquor'. Duration should be set logically for a young woman (1 - 2 hours). Intelligence is reduced by 2 and charm is increased by 1 for 'beer' and 'wine', and intelligence is reduced by 1 and charm is increased by 2 for 'liquor'.",
+      free_text: drinkAlcoholDescription,
     },
   },
   /*
