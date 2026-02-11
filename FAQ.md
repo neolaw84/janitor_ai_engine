@@ -13,14 +13,12 @@ This FAQ guide explains how to use the JanitorAI Script Scaffolder, whether you'
 4.  **Build**: Run `npm run build` to generate a minified script (`dist/effective_script.min.js`).
 5.  **Deploy**: Copy the content of the built script and paste it into the "Script" field of your JanitorAI character.
 
-```markdown
 **For Bot Creators (Non-Programming Background):**
 1.  **Leverage AI**: You don't need to write code manually. You may use an AI-enabled IDE (Integrated Development Environment) like Google's *Antigravity* (no relation to this library), or any other AI assistant to make the technical weight disappear. After opening this library (downloaded from github) in one such IDE, use prompts like following to get the AI to create the steps for you.
 2.  **Prompt to Scaffold**: Ask the AI: *"Use the JanitorAI Script Scaffolder to initialize a new project called 'SurvivalSim'."*
 3.  **Prompt to Configure**: Describe your logic in plain English: *"In `script_def.js`, set a `defaultState` with `hunger: 0`. Create a function that increases hunger by 10 every turn and resets it to 0 if the user mentions 'eating'."*
 4.  **Prompt to Test**: Ensure it works: *"Run a test where the user waits for 3 turns and then eats; verify the hunger levels are tracked correctly."*
 5.  **Prompt to Build & Deploy**: Get the final output: *"Run the build script and provide the minified code from `dist/effective_script.min.js` so I can paste it into JanitorAI."*
-```
 
 ## Common Questions
 

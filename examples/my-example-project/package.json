@@ -1,5 +1,5 @@
 {
-  "name": "examples/my-example-project",
+  "name": "../adult-script",
   "version": "0.0.1",
   "description": "A JanitorAI script project",
   "main": "index.js",

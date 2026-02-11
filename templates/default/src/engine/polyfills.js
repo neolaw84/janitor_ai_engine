@@ -30,11 +30,16 @@ const base64 = {
     for (
       let bc = 0, bs, buffer, idx = 0;
       (buffer = str.charAt(idx++));
-      ~buffer && ((bs = bc % 4 ? bs * 64 + bc : bc), bc++ % 4)
-        ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
-        : 0
     ) {
       buffer = base64.chars.indexOf(buffer);
+      if (~buffer) {
+        bs = bc % 4 ? bs * 64 + buffer : buffer;
+        if (bc++ % 4) {
+          output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6)));
+        }
+      } else {
+        break;
+      }
     }
     return output;
   },
@@ -42,3 +47,35 @@ const base64 = {
 
 export const _btoa = typeof btoa === "function" ? btoa : base64.encode;
 export const _atob = typeof atob === "function" ? atob : base64.decode;
+
+export const XORCipher = {
+  encrypt: function (text, key) {
+    try {
+      let result = "";
+      for (let i = 0; i < text.length; i++) {
+        result += String.fromCharCode(
+          text.charCodeAt(i) ^ key.charCodeAt(i % key.length),
+        );
+      }
+      return _btoa(result);
+    } catch (e) {
+      console.error("Encryption failed:", e);
+      return "";
+    }
+  },
+  decrypt: function (text, key) {
+    try {
+      let decoded = _atob(text);
+      let result = "";
+      for (let i = 0; i < decoded.length; i++) {
+        result += String.fromCharCode(
+          decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length),
+        );
+      }
+      return result;
+    } catch (e) {
+      console.error("Decryption failed:", e);
+      return null;
+    }
+  },
+};

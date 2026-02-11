@@ -3,6 +3,16 @@ export const TimeManager = {
    * Adds an ISO 8601 duration to a date string.
    * Supports Years (Y), Months (M), Weeks (W), Days (D), Hours (H), Minutes (M), and Seconds (S).
    */
+  isValidIsoTime: function (timeStr) {
+    if (!timeStr || typeof timeStr !== "string") return false;
+    const d = new Date(timeStr);
+    return !isNaN(d.getTime());
+  },
+  isValidIsoDuration: function (durationStr) {
+    if (!durationStr || typeof durationStr !== "string") return false;
+    const isoDurationRegex = /^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/;
+    return isoDurationRegex.test(durationStr);
+  },
   addDuration: function (isoTime, durationStr) {
     const date = new Date(isoTime);
     // Regex matches P[n]Y[n]M[n]W[n]DT[n]H[n]M[n]S
@@ -33,20 +43,8 @@ export const TimeManager = {
   },
   formatDateTime: function (isoTime) {
     const d = new Date(isoTime);
-    const pad = function (n) {
-      return (n < 10 ? "0" : "") + n;
-    };
-    const date =
-      d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate());
-    const hours = d.getUTCHours();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const h12 = hours % 12 || 12;
-    const time =
-      pad(h12) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + " " + ampm;
     const day = d.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
-
-
-    return date + " (" + day + ") " + time;
+    return d.toISOString().replace("T", " ").replace(/\..+/, "") + " (" + day + ")";
   },
 };
 

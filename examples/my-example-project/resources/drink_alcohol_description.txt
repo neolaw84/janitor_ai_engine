@@ -1,1 +1,0 @@
-allowed values are 'beer', 'wine' and 'liquor'. Duration should be set logically for a young woman (1 - 2 hours). Intelligence is reduced by 2 and charm is increased by 1 for 'beer' and 'wine', and intelligence is reduced by 1 and charm is increased by 2 for 'liquor'.
