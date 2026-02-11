@@ -6,7 +6,7 @@ require.extensions['.txt'] = function (module, filename) {
     module.exports = fs.readFileSync(filename, 'utf8');
 };
 
-const scriptDefPath = path.resolve(__dirname, '../script_def.js');
+const scriptDefPath = path.resolve(__dirname, '../src/user_defined/script_def.js');
 
 if (!fs.existsSync(scriptDefPath)) {
     console.error(`Error: script_def.js not found at ${scriptDefPath}`);

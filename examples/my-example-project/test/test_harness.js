@@ -22,7 +22,7 @@ const context = {
     personality: "Original Personality",
   },
   chat: {
-    messages: [
+    last_messages: [
       {
         role: "user",
         message: "Hello",
@@ -30,7 +30,7 @@ const context = {
       {
         role: "assistant",
         message:
-          'Hi there. [NARRATION_SUMMARY]{"elapsed_duration": "PT5M", "drink_alcohol": [{"what": "beer", "when": "2025-06-01T12:00:00Z"}]}[/NARRATION_SUMMARY]',
+          'Hi there. [NARRATION_SUMMARY]{"elapsed_duration": "PT5M", "consume_alcohol": [{"what": "beer", "when": "2025-06-01T12:00:00Z"}]}[/NARRATION_SUMMARY]',
       },
     ],
   },
@@ -66,7 +66,7 @@ try {
   }
 
   if (
-    context.character.scenario.includes("[SCRIPT_SECRET]") &&
+    context.character.personality.includes("[SCRIPT_SECRET]") &&
     context.character.scenario.includes("[NARRATION_SUMMARY]")
   ) {
     console.log("Verification PASSED: Output contains expected tags.");

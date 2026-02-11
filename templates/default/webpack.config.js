@@ -18,7 +18,7 @@ module.exports = (env) => {
     },
     resolve: {
       alias: {
-        "user-config": path.resolve(projectDir, "script_def.js"),
+        "user-config": path.resolve(projectDir, "src/user_defined/script_def.js"),
       },
     },
     module: {
