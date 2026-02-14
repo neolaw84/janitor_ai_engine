@@ -1,6 +1,4 @@
-# {{PROJECT_NAME}}
-
-This project is scaffolded by the JanitorAI Script Engine.
+# Janitor AI Foundation Script
 
 The Foundation Script for the Janitor AI Script environment. This project serves as a secure, sandboxed RPG logic engine for handling character states, effects, and narration guidance.
 

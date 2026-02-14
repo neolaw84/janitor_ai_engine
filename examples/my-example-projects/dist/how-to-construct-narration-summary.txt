@@ -1,0 +1,41 @@
+At the end of your response, you MUST include the [NARRATION_SUMMARY] block with updated summarized information on what happened in the narration in your current response.
+
+[NARRATION_SUMMARY]
+{
+    "elapsed_time": "An ISO 8601 duration string; e.g. PT1H30M for 1 hour and 30 minutes",
+    "effects": [],
+    "debug": {}
+}
+[/NARRATION_SUMMARY]
+
+The "effects" array can contain instances one or more json blocks from the following list:
+
+**[START OF EFFECT LIST]**
+Effect Type: consume_alcohol
+In the above narration of yours, if and only if {{user}} consume a type of alcohol, include one instance of the following in the "effects" array.
+
+{
+    "key": "consume_alcohol",
+    "what": "string; name of alcohol; allowed values are 'beer', 'wine', 'liquor'",
+    "temp": true,
+    "when": "string; in yyyy-mm-ddTHH:MM:SS format; when does {{user}} consume the {{what}}",
+    "duration": "string; in PT1H30M format; how long would the alcohol affect {{user}}; 1 hour for beer, 1.5 hour for wine and up to 3 hour for liquor",
+    "impacts": [
+        {
+            "stats": "strength",
+            "op": "set",
+            "value": "integer: 0 or 1 depending on potency of alcohol"
+        },
+        {
+            "stats": "dexterity",
+            "op": "sub",
+            "value": 1
+        }
+    ]
+}
+
+
+
+**[END OF EFFECT LIST]**
+
+**FOR EACH INSTANCE, ALWAYS INCLUDE ALL THE KEYS IN THE ABOVE JSON BLOCK**
