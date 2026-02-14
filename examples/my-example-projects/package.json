@@ -1,5 +1,5 @@
 {
-  "name": "janitor-ai-scripts",
+  "name": "janitor-ai-sandbox-project",
   "version": "1.0.0",
   "description": "Vanilla JS project for secured sandbox environment",
   "scripts": {
@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^30.2.0"
   }
 }

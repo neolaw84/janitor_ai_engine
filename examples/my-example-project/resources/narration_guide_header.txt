@@ -1,4 +1,0 @@
-## What MUST Happen and What MUST NOT Happen
-
-**The in-game date/time when the current turn starts (at the beginning of
-your current response) is : {{CURRENT_TIME}}**.

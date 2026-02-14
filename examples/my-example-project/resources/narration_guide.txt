@@ -1,3 +1,0 @@
-[NARRATION_GUIDE]
-${narrationGuide} 
-[/NARRATION_GUIDE]
