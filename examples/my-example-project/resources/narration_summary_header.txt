@@ -1,5 +1,0 @@
-## HOW TO CONSTRUCT [NARRATION_SUMMARY] BLOCK
-
-The JSON object MUST contain 'elapsed_duration' in ISO 8601 duration format (e.g., "PT5M" for 5 minutes or "P1DT2H" for 1 day and 2 hours).
-
-Additionally, strictly follow the following rules for specified events:
