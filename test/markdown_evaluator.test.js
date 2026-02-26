@@ -145,6 +145,11 @@ threw = false;
 try { evaluateJsCode('require("fs")'); } catch (e) { threw = true; }
 assert(threw, 'require is not accessible');
 
+// Function constructor should be blocked to prevent indirect code execution.
+threw = false;
+try { evaluateJsCode('[].constructor.constructor("return 1")()'); } catch (e) { threw = true; }
+assert(threw, 'Function constructor via prototype chain is blocked');
+
 // Summary
 console.log(`\n${passed} passed, ${failed} failed.`);
 if (failed > 0) {
