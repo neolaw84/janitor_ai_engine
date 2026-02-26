@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node test/cli.test.js",
+    "test:evaluator": "node test/markdown_evaluator.test.js",
     "create": "node src/cli.js"
   },
   "dependencies": {
